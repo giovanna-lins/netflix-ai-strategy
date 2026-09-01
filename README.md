@@ -8,6 +8,23 @@ one screen.
 
 This is a teaching prototype, not production software. See [What's Real, Simplified, Mocked, and Postponed](#whats-real-simplified-mocked-and-postponed) below.
 
+**Presenting? See [DEMO_SCRIPT.md](DEMO_SCRIPT.md) for a ready-to-read 2–3 minute walkthrough.**
+
+## 🚀 Launch the app (2 commands)
+
+Everything is already installed and set up. From the project folder:
+
+```bash
+source venv/bin/activate
+streamlit run app.py
+```
+
+A browser tab opens automatically at `http://localhost:8501`. If it doesn't, open
+that address yourself. To stop the app, go back to the terminal and press `Ctrl+C`.
+
+*(First time on a new machine, or if the `venv` folder is missing? See
+[Full setup from scratch](#full-setup-from-scratch) below instead.)*
+
 ## Purpose
 
 Streaming growth increasingly depends on retention, not new signups. Personalization
@@ -16,7 +33,7 @@ watch the app rank and compose a personalized row, generate a tailored tagline p
 title, and clear or flag each one before it's shown — the "grounding before serving"
 principle.
 
-## Quick start
+## Full setup from scratch
 
 ```bash
 python3 -m venv venv

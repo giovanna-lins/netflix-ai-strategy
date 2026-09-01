@@ -107,13 +107,18 @@
     All members and titles are fictional; no real Netflix data is used.
   </p>
 
-  <h2>How to run it</h2>
+  <h2>🚀 Launch it (already set up)</h2>
+  <pre><code>source venv/bin/activate
+streamlit run app.py</code></pre>
+  <p class="muted">Opens at <code>http://localhost:8501</code>. Press Ctrl+C in the terminal to stop it. Presenting to the class? See <code>DEMO_SCRIPT.md</code> in the project folder for a ready-to-read 2–3 minute walkthrough.</p>
+
+  <h2>First-time setup (only if starting from scratch)</h2>
   <pre><code>python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 python generate_data.py
 streamlit run app.py</code></pre>
-  <p class="muted">Opens at <code>http://localhost:8501</code>. Works fully offline — no API key required.</p>
+  <p class="muted">Works fully offline with template taglines if there's no API key — see README.md for how to add one.</p>
 
   <h2>The flow</h2>
   <div class="flow">
