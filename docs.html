@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CineMatch — Prototype Guide</title>
+<style>
+  :root {
+    --bg: #0e0e12;
+    --panel: #17171d;
+    --border: #2a2a33;
+    --text: #eaeaf0;
+    --muted: #9a9aa8;
+    --accent: #e50914;
+    --green: #2e7d32;
+    --red: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-top: 0; margin-bottom: 40px; }
+  h2 { font-size: 1.3rem; margin-top: 48px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  p { color: var(--text); }
+  .muted { color: var(--muted); }
+  code, pre {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  code { padding: 2px 6px; font-size: 0.9em; }
+  pre { padding: 14px 16px; overflow-x: auto; }
+  pre code { border: none; padding: 0; background: none; }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 24px 0;
+  }
+  .step {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 120px;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+  .step b { display: block; font-size: 0.95rem; margin-bottom: 2px; color: #fff; }
+  .arrow { color: var(--muted); font-size: 1.2rem; }
+  .loop-note {
+    margin-top: -6px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 0.92rem; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge.real { background: rgba(46,125,50,0.2); color: #6fcf73; }
+  .badge.simplified { background: rgba(255,193,7,0.15); color: #ffc107; }
+  .badge.mocked { background: rgba(179,38,30,0.2); color: #ff6b60; }
+  .badge.postponed { background: rgba(154,154,168,0.2); color: var(--muted); }
+
+  .card-example {
+    display: inline-block;
+    background: #8B0000;
+    color: white;
+    border-radius: 8px;
+    padding: 16px 14px;
+    min-width: 160px;
+    font-size: 0.85rem;
+    margin: 8px 0;
+  }
+  .card-example b { display: block; margin-bottom: 6px; }
+
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .footer { margin-top: 60px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); padding-top: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🎬 CineMatch</h1>
+  <p class="subtitle">A grounded personalized-discovery prototype — classroom MVP guide</p>
+
+  <h2>What this is</h2>
+  <p>
+    CineMatch is a small, local demo of how a streaming service could turn member data into a
+    personalized, <em>governed</em> home screen: rank titles for a member, write a tailored one-line
+    description, check that each title is actually allowed to be shown to that member, and learn
+    from what they click — all visible on one screen.
+  </p>
+  <p class="muted">
+    It is a teaching prototype built for a 90-minute classroom exercise, not production software.
+    All members and titles are fictional; no real Netflix data is used.
+  </p>
+
+  <h2>How to run it</h2>
+  <pre><code>python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python generate_data.py
+streamlit run app.py</code></pre>
+  <p class="muted">Opens at <code>http://localhost:8501</code>. Works fully offline — no API key required.</p>
+
+  <h2>The flow</h2>
+  <div class="flow">
+    <div class="step"><b>DATA</b>members, catalog, availability, policy</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>RANK</b>score titles for this member</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>COMPOSE</b>pick the top scorers</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>GENERATE</b>AI tagline per title</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>GROUND</b>check territory / rating / policy</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>SERVE</b>cleared titles shown; flagged → review</div>
+  </div>
+  <div class="flow">
+    <div class="step"><b>FEEDBACK</b>a Play click nudges genre weights</div>
+    <div class="arrow">↺</div>
+    <p class="loop-note">...loops back into RANK, closing the data flywheel on screen.</p>
+  </div>
+
+  <h2>Using the app</h2>
+  <ul>
+    <li><b>Choose a member</b> from the dropdown — each has a segment, home territory, favorite genres, and a maturity ceiling.</li>
+    <li>The <b>Top picks</b> row shows the highest-scoring titles that passed every check, each with a tagline and a score breakdown.</li>
+    <li>Example card:
+      <div class="card-example">
+        <b>Crimson Ledger</b>
+        Thriller | Drama · Rated R<br>
+        <i>"A thriller pick made for bingers fans like Ana."</i>
+      </div>
+    </li>
+    <li>The <b>Needs review</b> area shows titles that ranked well but failed a check (wrong territory, rating too high, closed rights window, or a restricted genre), with the plain-language reason.</li>
+    <li>Click <b>▶ Play</b> on any cleared title — it's logged, and its genres get a small ranking boost for the rest of your session. Reopen the ranking weights or just look again: the row reorders.</li>
+    <li>Open <b>⚖️ Ranking weights</b> to see and adjust the three numbers driving the score formula.</li>
+  </ul>
+
+  <h2>What's real, simplified, mocked, and postponed</h2>
+  <table>
+    <tr><th>Status</th><th>Item</th><th>Detail</th></tr>
+    <tr><td><span class="badge real">Real</span></td><td>Ranking, grounding, feedback loop</td><td>Genuinely running Python — not staged or hardcoded.</td></tr>
+    <tr><td><span class="badge real">Real</span></td><td>AI taglines (with a key)</td><td>An actual Claude API call per title when <code>ANTHROPIC_API_KEY</code> is set.</td></tr>
+    <tr><td><span class="badge simplified">Simplified</span></td><td>Member segments</td><td>Hand-labeled, not clustered from behavior.</td></tr>
+    <tr><td><span class="badge simplified">Simplified</span></td><td>Ranking model</td><td>An explainable weighted formula, not a trained ranker.</td></tr>
+    <tr><td><span class="badge simplified">Simplified</span></td><td>Feedback loop ("RL")</td><td>A greedy weight nudge per genre, not reinforcement learning.</td></tr>
+    <tr><td><span class="badge simplified">Simplified</span></td><td>Policy lookup</td><td>Plain keyword scan over one text file, not semantic retrieval.</td></tr>
+    <tr><td><span class="badge mocked">Mocked</span></td><td>Thumbnails</td><td>Colored cards, not AI-generated (GAN) artwork.</td></tr>
+    <tr><td><span class="badge mocked">Mocked</span></td><td>Rights/availability service</td><td>A static CSV table, not a live rights system.</td></tr>
+    <tr><td><span class="badge postponed">Postponed</span></td><td>Everything else</td><td>Real GAN art, trained ML/RL models, Graph-RAG, live data integrations, auth, and cloud/container infra — explicitly out of scope for a 90-minute build.</td></tr>
+  </table>
+
+  <h2>Limitations</h2>
+  <ul>
+    <li>Data is synthetic and small (8 members, 33 titles) — results are illustrative, not statistically valid.</li>
+    <li>The prototype does not attempt to prove that steering engagement actually lowers churn.</li>
+    <li>Grounding uses a static table and a keyword lookup, not live rights data or semantic search.</li>
+  </ul>
+
+  <div class="footer">CineMatch — classroom MVP · built with Python + Streamlit · see README.md for full setup details.</div>
+</div>
+</body>
+</html>
