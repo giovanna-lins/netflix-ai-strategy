@@ -32,6 +32,8 @@ with st.expander("ℹ️ How this screen works (data → decision → feedback)"
 
 if "tagline_cache" not in st.session_state:
     st.session_state.tagline_cache = {}
+if "thumbnail_cache" not in st.session_state:
+    st.session_state.thumbnail_cache = {}  # (title_id, member_id) -> PNG bytes
 if "feedback" not in st.session_state:
     st.session_state.feedback = {}  # member_id -> {genre: nudge_count}
 if "play_log" not in st.session_state:
@@ -94,22 +96,42 @@ flagged = flagged[:4]
 def render_card(col, title, status, reasons):
     with col:
         tagline = get_tagline_cached(title, selected_member) if status == "cleared" else None
-        tagline_html = f'<div style="font-size:0.8rem; margin-top:8px; font-style:italic;">"{tagline}"</div>' if tagline else ""
-        st.markdown(
-            f"""
-            <div style="background-color:{title['color']}; border-radius:8px;
-                        padding:16px 10px; min-height:150px; color:white;">
-                <div style="font-weight:600; font-size:0.95rem;">{title['title']}</div>
-                <div style="font-size:0.75rem; opacity:0.85; margin-top:6px;">{title['genres']}</div>
-                <div style="font-size:0.75rem; opacity:0.85;">Rated {title['maturity_rating']}</div>
-                {tagline_html}
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        thumb_key = (title["id"], selected_member["id"])
+        thumbnail = st.session_state.thumbnail_cache.get(thumb_key)
+
+        if thumbnail:
+            st.image(thumbnail, use_container_width=True)
+            st.markdown(f"**{title['title']}**")
+            st.caption(f"{title['genres']} · Rated {title['maturity_rating']}")
+            if tagline:
+                st.caption(f'"{tagline}"')
+        else:
+            tagline_html = f'<div style="font-size:0.8rem; margin-top:8px; font-style:italic;">"{tagline}"</div>' if tagline else ""
+            st.markdown(
+                f"""
+                <div style="background-color:{title['color']}; border-radius:8px;
+                            padding:16px 10px; min-height:150px; color:white;">
+                    <div style="font-weight:600; font-size:0.95rem;">{title['title']}</div>
+                    <div style="font-size:0.75rem; opacity:0.85; margin-top:6px;">{title['genres']}</div>
+                    <div style="font-size:0.75rem; opacity:0.85;">Rated {title['maturity_rating']}</div>
+                    {tagline_html}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
         st.caption(f"score {title['score']} · genre {title['genre_match']} · segment {title['segment_affinity']} · pop {title['popularity']} · feedback +{title['feedback_nudge']}")
         if status == "cleared":
             st.success("✅ Cleared — available, rated within ceiling, policy OK")
+            if not thumbnail:
+                if st.button("🎨 Generate art", key=f"art_{title['id']}"):
+                    with st.spinner("Generating stylized art..."):
+                        image_bytes = ai.generate_thumbnail(title, selected_member)
+                    if image_bytes:
+                        st.session_state.thumbnail_cache[thumb_key] = image_bytes
+                        st.rerun()
+                    else:
+                        st.warning("Couldn't generate art (no API key, or the call failed) — showing the style card instead.")
             if st.button("▶ Play", key=f"play_{title['id']}"):
                 log_play(selected_member, title)
                 st.rerun()
