@@ -18,6 +18,17 @@ if os.environ.get("ANTHROPIC_API_KEY"):
 else:
     st.caption("⚪ No ANTHROPIC_API_KEY found — using template taglines (set one in .env to enable live AI copy)")
 
+with st.expander("ℹ️ How this screen works (data → decision → feedback)"):
+    st.markdown(
+        "**DATA** (member + catalog + availability + policy) → "
+        "**RANK** (score titles for this member) → "
+        "**COMPOSE** (pick the top cleared titles) → "
+        "**GENERATE** (AI writes each tagline) → "
+        "**GROUND** (check territory, rating, policy — clear or flag) → "
+        "**SERVE** (show cleared titles; flagged ones go to Needs review) → "
+        "**FEEDBACK** (a Play click nudges future ranking, looping back to RANK)."
+    )
+
 
 if "tagline_cache" not in st.session_state:
     st.session_state.tagline_cache = {}
