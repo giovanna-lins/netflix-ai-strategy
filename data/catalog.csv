@@ -1,0 +1,33 @@
+id,title,genres,maturity_rating,popularity,color
+T1,Crimson Ledger,Thriller|Drama,R,78,#8B0000
+T2,Silver Static,Thriller|Drama,PG-13,65,#4B4B4B
+T3,Midnight Currency,Thriller|Crime,R,70,#2F2F4F
+T4,Last Ferry Out,Drama,PG-13,55,#5C4033
+T5,Harborlight,Drama|Romance,PG,48,#6A5ACD
+T6,Payload Protocol,Action|Comedy,PG-13,82,#FF8C00
+T7,Getaway Deluxe,Comedy|Action,PG-13,74,#FFA500
+T8,Neon Skyline,Action|Sci-Fi,R,88,#00CED1
+T9,Backfire,Action,PG-13,60,#B22222
+T10,Two Left Feet,Comedy,PG,52,#FFD700
+T11,Paper Moonlight,Romance|Drama,PG-13,85,#C71585
+T12,Second Bloom,Romance,PG,58,#FF69B4
+T13,Letters Unsent,Romance|Drama,PG,44,#DB7093
+T14,Ion Drift,Sci-Fi|Action,PG-13,91,#00BFFF
+T15,Gravity Well,Sci-Fi,PG-13,67,#1E90FF
+T16,Colony Nine,Sci-Fi|Drama,R,73,#4682B4
+T17,Bramblewood,Family|Animation,G,80,#32CD32
+T18,The Kite Keeper,Family|Animation,PG,76,#228B22
+T19,Sunny Side Studios,Family|Comedy,G,62,#ADFF2F
+T20,Nightshade Manor,Horror|Thriller,R,84,#4B0082
+T21,The Hollow Choir,Horror,R,71,#301934
+T22,Static at Dusk,Horror|Thriller,PG-13,56,#483D8B
+T23,Concrete Rivers,Documentary,PG-13,40,#708090
+T24,The Last Harvest,Documentary|Drama,PG,36,#556B2F
+T25,Quiet Static,Documentary|Drama,PG-13,8,#778899
+T26,Iron Bloom Legacy,Anime|Fantasy,PG-13,87,#9932CC
+T27,Paper Cranes,Anime|Fantasy,PG-13,75,#BA55D3
+T28,Skyforge Chronicles,Fantasy|Action,PG-13,69,#8A2BE2
+T29,Red Room Diaries,Thriller|Exploitation,R,80,#800000
+T30,Glasshouse Rules,Drama|Crime,R,63,#2E2E2E
+T31,The Understudy,Drama|Comedy,PG-13,50,#DAA520
+T32,Wildfire Season,Action|Drama,R,77,#B8860B

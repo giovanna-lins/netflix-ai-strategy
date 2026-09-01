@@ -1,0 +1,12 @@
+CineMatch Editorial & Brand Policy (v1)
+This is a short, local policy file used for a simple keyword lookup
+(a stand-in for full semantic retrieval over a real policy corpus).
+
+1. Titles tagged with the genre "Exploitation" must not be served automatically.
+   Flag for editorial review.
+
+2. Titles with a popularity score below 15 are considered low-confidence
+   and must be flagged for editorial review before serving.
+
+3. All other titles that pass availability and maturity-rating checks
+   may be served automatically without further review.
