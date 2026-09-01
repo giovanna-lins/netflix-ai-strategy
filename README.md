@@ -32,12 +32,12 @@ required — it runs fully offline with template-based taglines.
 ### Optional: enable live AI-generated taglines
 
 Without a key, each tagline is a plain-text template ("A thriller pick made for
-bingers fans like Ana."). With a Claude API key, the same line is written live by
-Claude instead.
+bingers fans like Ana."). With a Gemini API key, the same line is written live by
+Gemini instead.
 
-1. Get a key at [console.anthropic.com](https://console.anthropic.com)
-2. Copy `.env.example` to a new file named `.env`
-3. Set `ANTHROPIC_API_KEY=your-key-here` inside it
+1. Get a key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+2. Copy `.env.example` to a new file named `.env` (or edit the `.env` already in the project)
+3. Set `GEMINI_API_KEY=your-key-here` inside it
 
 `.env` is already git-ignored — never commit your key or paste it into code.
 
@@ -46,7 +46,7 @@ Claude instead.
 ```
 app.py             Streamlit UI — member selector, row, review area, feedback
 logic.py           Deterministic logic: data loading, ranking, grounding, feedback
-ai.py               Claude API tagline call + template fallback
+ai.py               Gemini API tagline call + template fallback
 generate_data.py   One-time generator for the synthetic /data files
 data/               members.csv, catalog.csv, availability.csv, policy.txt
 requirements.txt
@@ -59,7 +59,7 @@ requirements.txt
 flowchart TD
     A[DATA<br/>members, catalog, availability, policy] --> B[RANK<br/>score titles for the chosen member]
     B --> C[COMPOSE<br/>pick the top-scoring titles]
-    C --> D[GENERATE<br/>Claude writes a tagline per title<br/>template fallback if no API key]
+    C --> D[GENERATE<br/>Gemini writes a tagline per title<br/>template fallback if no API key]
     D --> E[GROUND<br/>check territory, rating, policy]
     E -->|cleared| F[SERVE<br/>personalized row]
     E -->|flagged| G[Needs review]
@@ -73,7 +73,7 @@ flowchart TD
    popularity, weights visible and adjustable on screen) orders all 33 fictional
    titles for that member.
 3. **Compose** — the top-scoring titles become row candidates.
-4. **Generate** — each candidate gets a short tagline (Claude API, or a template if
+4. **Generate** — each candidate gets a short tagline (Gemini API, or a template if
    there's no key).
 5. **Ground** — every candidate is checked against territory availability, the
    rights window, the member's maturity ceiling, and a short policy file (simple
@@ -104,7 +104,7 @@ member you demo.
 
 | | What it is here |
 |---|---|
-| **Real** | Ranking math, grounding checks (availability/rating/policy), the feedback loop, and (with an API key) the Claude-generated taglines are all genuinely running code — not staged or hardcoded. |
+| **Real** | Ranking math, grounding checks (availability/rating/policy), the feedback loop, and (with an API key) the Gemini-generated taglines are all genuinely running code — not staged or hardcoded. |
 | **Simplified** | Member segments are hand-labeled, not clustered. Ranking is an explainable weighted formula, not a trained model. The "RL" feedback loop is a greedy weight nudge, not real reinforcement learning. Policy lookup is a plain keyword scan over one text file, not semantic search over a real policy corpus. Churn/engagement figures shown are illustrative numbers derived from the profile, not predictions. |
 | **Mocked** | Thumbnails are colored cards, not AI-generated (GAN) artwork — avoids IP risk and heavy infra. The rights/availability service is a static CSV, not a live rights system. The "conflict message" is a rule-based string, not a reasoning engine. |
 | **Postponed** | Real GAN thumbnail generation, trained supervised/RL models, Graph-RAG/knowledge graphs, multi-territory scaling, live Netflix data or integrations, user authentication, and any cloud/container/CI infrastructure. All explicitly out of scope for a 90-minute build. |
@@ -124,6 +124,6 @@ member you demo.
 
 - **`streamlit: command not found`** — activate the virtual environment first
   (`source venv/bin/activate`).
-- **Blank taglines or a Claude error message** — check that `.env` contains a valid
-  `ANTHROPIC_API_KEY`; the app should still run fine on the template fallback either way.
+- **Blank taglines or a Gemini error message** — check that `.env` contains a valid
+  `GEMINI_API_KEY`; the app should still run fine on the template fallback either way.
 - **Port already in use** — run `streamlit run app.py --server.port 8502` instead.

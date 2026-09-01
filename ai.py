@@ -1,17 +1,17 @@
 """
-Generates a short, member-tailored tagline per title using the Claude API.
+Generates a short, member-tailored tagline per title using the Gemini API.
 Falls back to a plain template if there's no API key, no internet, or
 any other error -- the app must always run.
 """
 import os
 
-import anthropic
 import pandas as pd
 from dotenv import load_dotenv
+from google import genai
 
 load_dotenv()
 
-MODEL = "claude-haiku-4-5-20251001"
+MODEL = "gemini-2.5-flash"
 
 
 def template_tagline(title_row: pd.Series, member: pd.Series) -> str:
@@ -20,24 +20,20 @@ def template_tagline(title_row: pd.Series, member: pd.Series) -> str:
 
 
 def generate_tagline(title_row: pd.Series, member: pd.Series) -> str:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return template_tagline(title_row, member)
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        client = genai.Client(api_key=api_key)
         prompt = (
             f"Write one short, upbeat streaming-app tagline (max 12 words) for the title "
             f"'{title_row['title']}' (genres: {title_row['genres']}), tailored to a "
             f"'{member['segment']}' viewer who enjoys {member['favorite_genres']}. "
             f"Respond with only the tagline text, no quotes, no explanation."
         )
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=40,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = response.content[0].text.strip().strip('"')
+        response = client.models.generate_content(model=MODEL, contents=prompt)
+        text = (response.text or "").strip().strip('"')
         return text if text else template_tagline(title_row, member)
     except Exception:
         return template_tagline(title_row, member)

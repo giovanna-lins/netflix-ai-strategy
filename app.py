@@ -13,10 +13,10 @@ st.set_page_config(page_title="CineMatch", page_icon="🎬", layout="wide")
 st.title("🎬 CineMatch")
 st.caption("Grounded personalized discovery — classroom MVP")
 
-if os.environ.get("ANTHROPIC_API_KEY"):
-    st.caption("🟢 Taglines generated live by Claude")
+if os.environ.get("GEMINI_API_KEY") and os.environ.get("GEMINI_API_KEY") != "your-key-here":
+    st.caption("🟢 Taglines generated live by Gemini")
 else:
-    st.caption("⚪ No ANTHROPIC_API_KEY found — using template taglines (set one in .env to enable live AI copy)")
+    st.caption("⚪ No GEMINI_API_KEY found — using template taglines (set one in .env to enable live AI copy)")
 
 with st.expander("ℹ️ How this screen works (data → decision → feedback)"):
     st.markdown(
