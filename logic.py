@@ -66,3 +66,62 @@ def rank_titles(member: pd.Series, catalog: pd.DataFrame, weights: dict = None) 
     ).round(2)
 
     return df.sort_values("score", ascending=False).reset_index(drop=True)
+
+
+RATING_ORDER = {"G": 0, "PG": 1, "PG-13": 2, "R": 3}
+
+
+def check_policy(title_row: pd.Series, policy_text: str) -> list:
+    """
+    Simple keyword lookup over the local policy text (a stand-in for
+    semantic retrieval over a real policy corpus). Returns a list of
+    plain-language reasons if the title trips a rule, else [].
+    """
+    import re
+
+    reasons = []
+    genres = set(title_row["genres"].split("|"))
+    for line in policy_text.splitlines():
+        lower = line.lower()
+        if "flag" not in lower:
+            continue
+        for genre in genres:
+            if genre.lower() in lower:
+                clean_line = re.sub(r"^\d+\.\s*", "", line.strip())
+                reasons.append(f"policy: {clean_line}")
+
+    match = re.search(r"popularity score below (\d+)", policy_text, re.IGNORECASE)
+    if match:
+        threshold = int(match.group(1))
+        if title_row["popularity"] < threshold:
+            reasons.append(
+                f"policy: popularity {title_row['popularity']} is below the {threshold}-point confidence threshold"
+            )
+    return reasons
+
+
+def ground_title(title_row: pd.Series, member: pd.Series, availability: pd.DataFrame, policy_text: str):
+    """
+    Checks one title against territory availability, the rights window,
+    the member's maturity ceiling, and policy keywords. Returns
+    ("cleared" | "flagged", [reasons]).
+    """
+    reasons = []
+
+    match = availability[
+        (availability["title_id"] == title_row["id"]) & (availability["territory"] == member["territory"])
+    ]
+    if match.empty or not bool(match.iloc[0]["available"]):
+        reasons.append(f"not available in {member['territory']}")
+    elif not bool(match.iloc[0]["rights_window_ok"]):
+        reasons.append(f"rights window closed in {member['territory']}")
+
+    if RATING_ORDER[title_row["maturity_rating"]] > RATING_ORDER[member["maturity_ceiling"]]:
+        reasons.append(
+            f"rated {title_row['maturity_rating']}, above this member's {member['maturity_ceiling']} ceiling"
+        )
+
+    reasons.extend(check_policy(title_row, policy_text))
+
+    status = "flagged" if reasons else "cleared"
+    return status, reasons

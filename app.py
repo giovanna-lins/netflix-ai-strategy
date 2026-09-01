@@ -31,14 +31,22 @@ with st.expander("⚖️ Ranking weights (tweak the formula)"):
 
 weights = {"genre": genre_w, "segment": segment_w, "popularity": pop_w}
 catalog = logic.load_catalog()
+availability = logic.load_availability()
+policy_text = logic.load_policy_text()
 ranked = logic.rank_titles(selected_member, catalog, weights)
 
-st.subheader(f"Top picks for {selected_member['name']}")
 TOP_N = 6
-top_titles = ranked.head(TOP_N)
+CANDIDATE_POOL = 12  # how far down the ranked list we look before giving up
 
-cards = st.columns(TOP_N)
-for col, (_, title) in zip(cards, top_titles.iterrows()):
+cleared, flagged = [], []
+for _, title in ranked.head(CANDIDATE_POOL).iterrows():
+    status, reasons = logic.ground_title(title, selected_member, availability, policy_text)
+    (cleared if status == "cleared" else flagged).append((title, reasons))
+cleared = cleared[:TOP_N]
+flagged = flagged[:4]
+
+
+def render_card(col, title, status, reasons):
     with col:
         st.markdown(
             f"""
@@ -52,3 +60,20 @@ for col, (_, title) in zip(cards, top_titles.iterrows()):
             unsafe_allow_html=True,
         )
         st.caption(f"score {title['score']} · genre {title['genre_match']} · segment {title['segment_affinity']} · pop {title['popularity']}")
+        if status == "cleared":
+            st.success("✅ Cleared — available, rated within ceiling, policy OK")
+        else:
+            st.error("🚫 Flagged — " + "; ".join(reasons))
+
+
+st.subheader(f"Top picks for {selected_member['name']}")
+cards = st.columns(TOP_N)
+for col, (title, reasons) in zip(cards, cleared):
+    render_card(col, title, "cleared", reasons)
+
+if flagged:
+    st.subheader("🔎 Needs review")
+    st.caption("Flagged before display — not shown to the member, kept here for an editorial reviewer.")
+    review_cols = st.columns(len(flagged))
+    for col, (title, reasons) in zip(review_cols, flagged):
+        render_card(col, title, "flagged", reasons)
