@@ -1,11 +1,33 @@
-import streamlit as st
+import os
 
+import streamlit as st
+from dotenv import load_dotenv
+
+import ai
 import logic
+
+load_dotenv()
 
 st.set_page_config(page_title="CineMatch", page_icon="🎬", layout="wide")
 
 st.title("🎬 CineMatch")
 st.caption("Grounded personalized discovery — classroom MVP")
+
+if os.environ.get("ANTHROPIC_API_KEY"):
+    st.caption("🟢 Taglines generated live by Claude")
+else:
+    st.caption("⚪ No ANTHROPIC_API_KEY found — using template taglines (set one in .env to enable live AI copy)")
+
+
+if "tagline_cache" not in st.session_state:
+    st.session_state.tagline_cache = {}
+
+
+def get_tagline_cached(title_row, member_row) -> str:
+    cache_key = (title_row["id"], member_row["id"])
+    if cache_key not in st.session_state.tagline_cache:
+        st.session_state.tagline_cache[cache_key] = ai.generate_tagline(title_row, member_row)
+    return st.session_state.tagline_cache[cache_key]
 
 members = logic.load_members()
 
@@ -48,6 +70,8 @@ flagged = flagged[:4]
 
 def render_card(col, title, status, reasons):
     with col:
+        tagline = get_tagline_cached(title, selected_member) if status == "cleared" else None
+        tagline_html = f'<div style="font-size:0.8rem; margin-top:8px; font-style:italic;">"{tagline}"</div>' if tagline else ""
         st.markdown(
             f"""
             <div style="background-color:{title['color']}; border-radius:8px;
@@ -55,6 +79,7 @@ def render_card(col, title, status, reasons):
                 <div style="font-weight:600; font-size:0.95rem;">{title['title']}</div>
                 <div style="font-size:0.75rem; opacity:0.85; margin-top:6px;">{title['genres']}</div>
                 <div style="font-size:0.75rem; opacity:0.85;">Rated {title['maturity_rating']}</div>
+                {tagline_html}
             </div>
             """,
             unsafe_allow_html=True,
