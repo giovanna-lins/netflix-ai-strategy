@@ -46,7 +46,7 @@ Gemini instead.
 ```
 app.py             Streamlit UI — member selector, row, review area, feedback
 logic.py           Deterministic logic: data loading, ranking, grounding, feedback
-ai.py               Gemini API tagline call + template fallback
+ai.py               Gemini API tagline + on-demand thumbnail calls, with fallbacks
 generate_data.py   One-time generator for the synthetic /data files
 data/               members.csv, catalog.csv, availability.csv, policy.txt
 requirements.txt
@@ -79,10 +79,25 @@ flowchart TD
    rights window, the member's maturity ceiling, and a short policy file (simple
    keyword lookup). Anything that fails is pulled into "Needs review" with a plain
    -language reason instead of being shown.
-6. **Serve** — cleared titles fill the personalized row.
+6. **Serve** — cleared titles fill the personalized row, each shown by default as a
+   colored style card. Clicking **🎨 Generate art** on a card calls the Gemini image
+   model live for an abstract, mood-matched illustration in its place (see note below).
 7. **Feedback** — clicking ▶ Play on a title logs it and nudges that title's genres
    upward for the rest of the session, visibly reordering the row on the next look.
    This closes the loop back into step 2.
+
+### About the AI-generated thumbnails
+
+Thumbnails are colored style cards by default — generating art is opt-in per title
+(click **🎨 Generate art**) because image generation is much slower than the text
+taglines, and doing it automatically for a whole row would make the demo feel
+sluggish. The prompt deliberately asks for **abstract shapes, gradients, and mood/color
+only** — no text, no logos, no recognizable faces, no real actors or characters —
+which keeps it a stylized illustration rather than anything that could resemble a
+real movie poster (this is the same brand/IP concern the original spec flagged
+for mocking thumbnails, just handled with a narrower, safer prompt instead of
+skipping the feature entirely). Results are cached per title/member for the
+session; if there's no key or the call fails, the style card stays as-is.
 
 ## Data
 
@@ -104,9 +119,9 @@ member you demo.
 
 | | What it is here |
 |---|---|
-| **Real** | Ranking math, grounding checks (availability/rating/policy), the feedback loop, and (with an API key) the Gemini-generated taglines are all genuinely running code — not staged or hardcoded. |
+| **Real** | Ranking math, grounding checks (availability/rating/policy), the feedback loop, and (with an API key) the Gemini-generated taglines and on-demand thumbnails are all genuinely running code — not staged or hardcoded. |
 | **Simplified** | Member segments are hand-labeled, not clustered. Ranking is an explainable weighted formula, not a trained model. The "RL" feedback loop is a greedy weight nudge, not real reinforcement learning. Policy lookup is a plain keyword scan over one text file, not semantic search over a real policy corpus. Churn/engagement figures shown are illustrative numbers derived from the profile, not predictions. |
-| **Mocked** | Thumbnails are colored cards, not AI-generated (GAN) artwork — avoids IP risk and heavy infra. The rights/availability service is a static CSV, not a live rights system. The "conflict message" is a rule-based string, not a reasoning engine. |
+| **Mocked** | Thumbnails default to colored style cards; AI art is opt-in and deliberately abstract (no faces/text/logos) rather than full GAN movie-poster generation — avoids IP risk and heavy infra. The rights/availability service is a static CSV, not a live rights system. The "conflict message" is a rule-based string, not a reasoning engine. |
 | **Postponed** | Real GAN thumbnail generation, trained supervised/RL models, Graph-RAG/knowledge graphs, multi-territory scaling, live Netflix data or integrations, user authentication, and any cloud/container/CI infrastructure. All explicitly out of scope for a 90-minute build. |
 
 ## Assumptions & limitations
@@ -118,7 +133,7 @@ member you demo.
   system would need live rights data and semantic retrieval.
 - The prototype does not attempt to prove that steering engagement actually lowers
   churn — that question stays open, as in the underlying strategy work.
-- Generated artwork is mocked entirely to avoid brand/IP risk.
+- Generated artwork is abstract by design (no faces, text, logos, or likenesses) to avoid brand/IP risk — it is not attempting to recreate real movie poster art.
 
 ## Troubleshooting
 

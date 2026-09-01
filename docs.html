@@ -147,6 +147,7 @@ streamlit run app.py</code></pre>
       </div>
     </li>
     <li>The <b>Needs review</b> area shows titles that ranked well but failed a check (wrong territory, rating too high, closed rights window, or a restricted genre), with the plain-language reason.</li>
+    <li>Click <b>🎨 Generate art</b> on a card to replace its colored style card with a live, abstract Gemini-generated illustration matched to the title's mood — this is opt-in per title since image generation is slower than the text taglines.</li>
     <li>Click <b>▶ Play</b> on any cleared title — it's logged, and its genres get a small ranking boost for the rest of your session. Reopen the ranking weights or just look again: the row reorders.</li>
     <li>Open <b>⚖️ Ranking weights</b> to see and adjust the three numbers driving the score formula.</li>
   </ul>
@@ -160,7 +161,7 @@ streamlit run app.py</code></pre>
     <tr><td><span class="badge simplified">Simplified</span></td><td>Ranking model</td><td>An explainable weighted formula, not a trained ranker.</td></tr>
     <tr><td><span class="badge simplified">Simplified</span></td><td>Feedback loop ("RL")</td><td>A greedy weight nudge per genre, not reinforcement learning.</td></tr>
     <tr><td><span class="badge simplified">Simplified</span></td><td>Policy lookup</td><td>Plain keyword scan over one text file, not semantic retrieval.</td></tr>
-    <tr><td><span class="badge mocked">Mocked</span></td><td>Thumbnails</td><td>Colored cards, not AI-generated (GAN) artwork.</td></tr>
+    <tr><td><span class="badge mocked">Mocked</span></td><td>Thumbnails</td><td>Colored cards by default; a "Generate art" button calls Gemini's image model live for an abstract, mood-matched illustration (no faces, text, or logos) — not full GAN movie-poster generation.</td></tr>
     <tr><td><span class="badge mocked">Mocked</span></td><td>Rights/availability service</td><td>A static CSV table, not a live rights system.</td></tr>
     <tr><td><span class="badge postponed">Postponed</span></td><td>Everything else</td><td>Real GAN art, trained ML/RL models, Graph-RAG, live data integrations, auth, and cloud/container infra — explicitly out of scope for a 90-minute build.</td></tr>
   </table>
