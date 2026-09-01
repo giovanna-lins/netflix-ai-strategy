@@ -8,6 +8,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 load_dotenv()
 
@@ -32,8 +33,15 @@ def generate_tagline(title_row: pd.Series, member: pd.Series) -> str:
             f"'{member['segment']}' viewer who enjoys {member['favorite_genres']}. "
             f"Respond with only the tagline text, no quotes, no explanation."
         )
-        response = client.models.generate_content(model=MODEL, contents=prompt)
+        config = types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0),
+            max_output_tokens=40,
+        )
+        response = client.models.generate_content(model=MODEL, contents=prompt, config=config)
         text = (response.text or "").strip().strip('"')
-        return text if text else template_tagline(title_row, member)
+        # Guard against any stray long/multi-line output slipping through.
+        if not text or len(text) > 150 or "\n" in text:
+            return template_tagline(title_row, member)
+        return text
     except Exception:
         return template_tagline(title_row, member)
