@@ -39,18 +39,24 @@ SEGMENT_GENRE_AFFINITY = {
 }
 
 DEFAULT_WEIGHTS = {"genre": 5, "segment": 3, "popularity": 2}
+FEEDBACK_WEIGHT = 1.5
 
 
-def rank_titles(member: pd.Series, catalog: pd.DataFrame, weights: dict = None) -> pd.DataFrame:
+def rank_titles(member: pd.Series, catalog: pd.DataFrame, weights: dict = None, feedback_bonus: dict = None) -> pd.DataFrame:
     """
     Score every title for one member using a transparent, explainable formula:
         score = genre_weight * genre_match_count
               + segment_weight * segment_affinity_count
               + popularity_weight * (popularity / 100)
+              + FEEDBACK_WEIGHT * feedback_bonus_for_this_title's_genres
+    `feedback_bonus` is a {genre: count} dict built from past clicks/plays
+    this session -- this is the "bandit-lite" stand-in for reinforcement
+    learning: no training, just a running nudge per genre.
     Returns the catalog sorted by score, descending, with the score
     components attached so the reasoning can be shown on screen.
     """
     weights = weights or DEFAULT_WEIGHTS
+    feedback_bonus = feedback_bonus or {}
     favorite_genres = set(member["favorite_genres"].split("|"))
     segment_genres = SEGMENT_GENRE_AFFINITY.get(member["segment"], set())
 
@@ -59,10 +65,12 @@ def rank_titles(member: pd.Series, catalog: pd.DataFrame, weights: dict = None) 
 
     df["genre_match"] = title_genre_sets.apply(lambda g: len(g & favorite_genres))
     df["segment_affinity"] = title_genre_sets.apply(lambda g: len(g & segment_genres))
+    df["feedback_nudge"] = title_genre_sets.apply(lambda g: sum(feedback_bonus.get(genre, 0) for genre in g))
     df["score"] = (
         weights["genre"] * df["genre_match"]
         + weights["segment"] * df["segment_affinity"]
         + weights["popularity"] * (df["popularity"] / 100)
+        + FEEDBACK_WEIGHT * df["feedback_nudge"]
     ).round(2)
 
     return df.sort_values("score", ascending=False).reset_index(drop=True)

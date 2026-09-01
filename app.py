@@ -21,6 +21,17 @@ else:
 
 if "tagline_cache" not in st.session_state:
     st.session_state.tagline_cache = {}
+if "feedback" not in st.session_state:
+    st.session_state.feedback = {}  # member_id -> {genre: nudge_count}
+if "play_log" not in st.session_state:
+    st.session_state.play_log = []  # list of {member, title}
+
+
+def log_play(member_row, title_row):
+    member_feedback = st.session_state.feedback.setdefault(member_row["id"], {})
+    for genre in title_row["genres"].split("|"):
+        member_feedback[genre] = member_feedback.get(genre, 0) + 1
+    st.session_state.play_log.insert(0, {"member": member_row["name"], "title": title_row["title"]})
 
 
 def get_tagline_cached(title_row, member_row) -> str:
@@ -55,7 +66,8 @@ weights = {"genre": genre_w, "segment": segment_w, "popularity": pop_w}
 catalog = logic.load_catalog()
 availability = logic.load_availability()
 policy_text = logic.load_policy_text()
-ranked = logic.rank_titles(selected_member, catalog, weights)
+feedback_bonus = st.session_state.feedback.get(selected_member["id"], {})
+ranked = logic.rank_titles(selected_member, catalog, weights, feedback_bonus)
 
 TOP_N = 6
 CANDIDATE_POOL = 12  # how far down the ranked list we look before giving up
@@ -84,9 +96,12 @@ def render_card(col, title, status, reasons):
             """,
             unsafe_allow_html=True,
         )
-        st.caption(f"score {title['score']} · genre {title['genre_match']} · segment {title['segment_affinity']} · pop {title['popularity']}")
+        st.caption(f"score {title['score']} · genre {title['genre_match']} · segment {title['segment_affinity']} · pop {title['popularity']} · feedback +{title['feedback_nudge']}")
         if status == "cleared":
             st.success("✅ Cleared — available, rated within ceiling, policy OK")
+            if st.button("▶ Play", key=f"play_{title['id']}"):
+                log_play(selected_member, title)
+                st.rerun()
         else:
             st.error("🚫 Flagged — " + "; ".join(reasons))
 
@@ -102,3 +117,15 @@ if flagged:
     review_cols = st.columns(len(flagged))
     for col, (title, reasons) in zip(review_cols, flagged):
         render_card(col, title, "flagged", reasons)
+
+st.divider()
+st.subheader("🔁 Feedback loop")
+if feedback_bonus:
+    st.caption(f"Clicks so far for {selected_member['name']} are nudging these genres up in the ranking:")
+    st.write(" · ".join(f"**{genre}** +{count}" for genre, count in feedback_bonus.items()))
+else:
+    st.caption("No plays logged yet for this member — click ▶ Play on a title above and watch the row reorder.")
+
+member_log = [entry for entry in st.session_state.play_log if entry["member"] == selected_member["name"]]
+if member_log:
+    st.caption("Recent plays: " + ", ".join(entry["title"] for entry in member_log[:5]))
